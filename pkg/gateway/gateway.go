@@ -3,7 +3,7 @@ package gateway
 import (
 	"net/http"
 
-	"github.com/cortexproject/cortex/pkg/util"
+	cortexLog "github.com/cortexproject/cortex/pkg/util/log"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/weaveworks/common/server"
@@ -57,7 +57,7 @@ func (g *Gateway) healthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *Gateway) notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	logger := log.With(util.WithContext(r.Context(), util.Logger), "ip_address", r.RemoteAddr)
+	logger := log.With(cortexLog.WithContext(r.Context(), cortexLog.Logger), "ip_address", r.RemoteAddr)
 	level.Info(logger).Log("msg", "no request handler defined for this route", "route", r.RequestURI)
 	w.WriteHeader(404)
 	w.Write([]byte("404 - Resource not found"))

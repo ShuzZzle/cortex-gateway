@@ -1,17 +1,40 @@
+################################################################################
+##                               BUILD ARGS                                   ##
+################################################################################
+ARG GOLANG_IMAGE=golang:1.14.15
+ARG ALPINE_ARCH=amd64
 
-# build image
-FROM golang:1.14-alpine as builder
-RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
+ARG DISTROLESS=gcr.io/distroless/base
 
-WORKDIR /app
-COPY . .
+################################################################################
+##                              BUILD STAGE                                   ##
+################################################################################
+# Build the manager as a statically compiled binary so it has no dependencies
+# libc, muscl, etc.
+FROM ${GOLANG_IMAGE} as builder
 
-RUN CGO_ENABLED=0 go build -o /go/bin/cortex-gateway
+WORKDIR /build
+COPY go.mod go.sum ./
+COPY pkg/ pkg/
+COPY cmd/ cmd/
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+ENV GOARCH=amd64
+ENV GOPROXY ${GOPROXY:-https://proxy.golang.org}
 
-# executable image
-FROM alpine:3
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /go/bin/cortex-gateway /go/bin/cortex-gateway
+RUN go mod download -x
+ARG VERSION=unknown
+ARG GOPROXY
 
-ENV VERSION 0.1.0
-ENTRYPOINT ["/go/bin/cortex-gateway"]
+#   -w	disable DWARF generation
+#   -s	disable symbol table
+RUN go build -a -ldflags="-w -s -extldflags '-static' -X 'main.version=${VERSION}'" -o cortex-gateway ./cmd/cortex-gateway/main.go
+################################################################################
+##                               MAIN STAGE                                   ##
+################################################################################
+FROM ${DISTROLESS}
+
+COPY --from=builder /build/cortex-gateway /bin/cortex-gateway
+
+ENTRYPOINT ["/bin/cortex-gateway"]
+CMD ["--help"]

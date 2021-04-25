@@ -7,6 +7,12 @@
 
 Cortex Gateway is a microservice which strives to help you administrating and operating your [Cortex](https://github.com/cortexproject/cortex) Cluster in multi tenant environments.
 
+## Building
+To correctly build (including the version) run
+```
+docker build -t cortex-gateway . --build-arg=VERSION=$(shell git describe --exact-match 2> /dev/null || git describe --match=$(git rev-parse --short=8 HEAD) --always --dirty --abbrev=8)
+```
+
 ## Features
 
 - [x] Authentication of Prometheus & Grafana instances with JSON Web Tokens

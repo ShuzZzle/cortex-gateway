@@ -3,9 +3,7 @@ package gateway
 import (
 	"flag"
 	"fmt"
-	"net/http"
-
-	"github.com/cortexproject/cortex/pkg/util"
+	cortexLog "github.com/cortexproject/cortex/pkg/util/log"
 	jwt "github.com/dgrijalva/jwt-go"
 	jwtReq "github.com/dgrijalva/jwt-go/request"
 	"github.com/go-kit/kit/log"
@@ -13,6 +11,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/weaveworks/common/middleware"
+	"golang.org/x/time/rate"
+	"net/http"
 )
 
 var (
@@ -27,17 +27,31 @@ var (
 		Name:      "succeeded_authentications_total",
 		Help:      "The total number of succeeded authentications.",
 	}, []string{"tenant"})
+
+	// 1 Request per second with a burst size of 10, refreshed 1 per second
+	limiter = rate.NewLimiter(1, 10)
 )
 
 func init() {
 	flag.StringVar(&jwtSecret, "gateway.auth.jwt-secret", "", "Secret to sign JSON Web Tokens")
 }
 
+type statusRecorder struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rec *statusRecorder) WriteHeader(statusCode int) {
+	rec.statusCode = statusCode
+	rec.ResponseWriter.WriteHeader(statusCode)
+}
+
 // AuthenticateTenant validates the Bearer Token and attaches the TenantID to the request
 var AuthenticateTenant = middleware.Func(func(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := log.With(util.WithContext(r.Context(), util.Logger), "ip_address", r.RemoteAddr)
+		logger := log.With(cortexLog.WithContext(r.Context(), cortexLog.Logger), "ip_address", r.RemoteAddr)
 		level.Debug(logger).Log("msg", "authenticating request", "route", r.RequestURI)
+
 
 		tokenString := r.Header.Get("Authorization") // Get operation is case insensitive
 		if tokenString == "" {
