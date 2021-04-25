@@ -52,13 +52,13 @@ func (g *Gateway) registerRoutes() {
 }
 
 func (g *Gateway) healthCheck(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Ok"))
 }
 
 func (g *Gateway) notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	logger := log.With(cortexLog.WithContext(r.Context(), cortexLog.Logger), "ip_address", r.RemoteAddr)
 	level.Info(logger).Log("msg", "no request handler defined for this route", "route", r.RequestURI)
-	w.WriteHeader(404)
+	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("404 - Resource not found"))
 }

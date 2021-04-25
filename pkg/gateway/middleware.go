@@ -32,16 +32,6 @@ func init() {
 	flag.StringVar(&jwtSecret, "gateway.auth.jwt-secret", "", "Secret to sign JSON Web Tokens")
 }
 
-type statusRecorder struct {
-	http.ResponseWriter
-	statusCode int
-}
-
-func (rec *statusRecorder) WriteHeader(statusCode int) {
-	rec.statusCode = statusCode
-	rec.ResponseWriter.WriteHeader(statusCode)
-}
-
 // AuthenticateTenant validates the Bearer Token and attaches the TenantID to the request
 var AuthenticateTenant = middleware.Func(func(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -54,6 +44,7 @@ var AuthenticateTenant = middleware.Func(func(next http.Handler) http.Handler {
 			level.Info(logger).Log("msg", "no bearer token provided")
 			http.Error(w, "No bearer token provided", http.StatusUnauthorized)
 			authFailures.WithLabelValues("no_token").Inc()
+
 			return
 		}
 
@@ -79,6 +70,7 @@ var AuthenticateTenant = middleware.Func(func(next http.Handler) http.Handler {
 			level.Info(logger).Log("msg", "invalid bearer token", "err", err.Error())
 			http.Error(w, "Invalid bearer token", http.StatusUnauthorized)
 			authFailures.WithLabelValues("token_not_valid").Inc()
+
 			return
 		}
 
