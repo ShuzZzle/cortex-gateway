@@ -11,7 +11,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/weaveworks/common/middleware"
-	"golang.org/x/time/rate"
 	"net/http"
 )
 
@@ -27,9 +26,6 @@ var (
 		Name:      "succeeded_authentications_total",
 		Help:      "The total number of succeeded authentications.",
 	}, []string{"tenant"})
-
-	// 1 Request per second with a burst size of 10, refreshed 1 per second
-	limiter = rate.NewLimiter(1, 10)
 )
 
 func init() {
