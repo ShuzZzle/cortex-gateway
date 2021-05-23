@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ShuzZzle/cortex-gateway/pkg/gateway"
+	testgw "github.com/ShuzZzle/cortex-gateway/pkg/gateway"
+	"github.com/ShuzZzle/cortex-gateway/pkg/gateway/api"
 	cortexLog "github.com/cortexproject/cortex/pkg/util/log"
+	"github.com/gorilla/mux"
 	"net/http"
 	"os"
 
@@ -28,6 +30,7 @@ func main() {
 
 	var (
 		serverCfg = server.Config{
+			HTTPListenPort: 8080,
 			MetricsNamespace: "cortex_gateway",
 			HTTPMiddleware: []middleware.Interface{
 				middleware.Func(func(handler http.Handler) http.Handler {
@@ -38,7 +41,7 @@ func main() {
 				middleware.ServerUserHeaderInterceptor,
 			},
 		}
-		gatewayCfg gateway.Config
+		gatewayCfg testgw.Config
 	)
 
 	flagext.RegisterFlags(&serverCfg, &gatewayCfg)
@@ -65,9 +68,20 @@ func main() {
 	defer svr.Shutdown()
 
 	// Setup proxy and register routes
-	gateway, err := gateway.New(gatewayCfg, svr)
+	gateway, err := testgw.New(gatewayCfg, svr)
 	cortexLog.CheckFatal("initializing gateway", err)
-	gateway.Start()
+	gateway.RegisterRoutes()
+
+	defer gateway.Close()
+
+	weaveServer := svr.HTTPServer
+	originalHandler := weaveServer.Handler
+	muxRouter := mux.NewRouter()
+	webApp := testgw.SpaHandler{StaticPath: "web/apps/cortex-ui/dist", IndexPath: "index.html"}
+	muxRouter.PathPrefix("/cortex-ui").Handler(webApp)
+	muxRouter.PathPrefix("/cortex-api").Handler(api.InitRouter())
+	muxRouter.PathPrefix("/").Handler(originalHandler)
+	weaveServer.Handler = muxRouter
 
 	svr.Run()
 }

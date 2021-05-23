@@ -2,16 +2,22 @@ global:
   scrape_interval: 15s # By default, scrape targets every 15 seconds.
   scrape_timeout: 15s
   evaluation_interval: 15s
-  # external_labels:
-  #  - __replica__: $${MY_POD_NAME}
-# remote_write:
-#   - url: http://host.docker.internal/api/prom/push
-#     bearer_token: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRfaWQiOiJkZXZlbG9wbWVudCIsInZlcnNpb24iOjEsImF1ZCI6InJld2UifQ.a7zdFoVYTk_CKR1Cj3h6S3SBGPseS0x3PNJjy4jdvPtWaraDC638QlXu0CeBMf3vLWPBJB0fopbSMQvm6IoPtw
-#     queue_config:
-#       max_shards: 20
-#       max_samples_per_send: 1000
+  external_labels:
+    test: mytest
+
+remote_write:
+  - url: http://dockerhost/api/experimental/prom/push
+    bearer_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0ZW5hbnRfaWQiOiJjb3J0ZXgtZ2F0ZXdheSIsImF1ZGllbmNlIjpudWxsLCJ2ZXJzaW9uIjpudWxsfQ.OtOHzKW3u2iRSUesCRMs8VVxcWZc4yP0xuej-9oPUGyaUv9BqGnNbGK8WCJ25XsgVLxfe_H5Smbg0k9oaqR_Lg
+    queue_config:
+      max_shards: 20
+      max_samples_per_send: 1000
 
 scrape_configs:
   - job_name: 'prometheus'
-    static_configs: 
-        - targets: ["localhost:9090"]
+    static_configs:
+      - targets: [ "localhost:9090" ]
+
+  - job_name: 'nodeexporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'nodeexporter:9100' ]
