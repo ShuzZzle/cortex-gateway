@@ -1,0 +1,129 @@
+{
+  "version": 2,
+  "cli": {
+    "defaultCollection": "@nrwl/react"
+  },
+  "defaultProject": "cortex-ui",
+  "generators": {
+    "@nrwl/react": {
+      "application": {
+        "style": "css",
+        "linter": "eslint",
+        "strict": true,
+        "babel": true
+      },
+      "component": {
+        "style": "css"
+      },
+      "library": {
+        "style": "css",
+        "linter": "eslint",
+        "strict": true
+      }
+    }
+  },
+  "projects": {
+    "cortex-ui": {
+      "root": "apps/cortex-ui",
+      "sourceRoot": "apps/cortex-ui/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/web:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/cortex-ui",
+            "index": "apps/cortex-ui/src/index.html",
+            "main": "apps/cortex-ui/src/main.tsx",
+            "polyfills": "apps/cortex-ui/src/polyfills.ts",
+            "tsConfig": "apps/cortex-ui/tsconfig.app.json",
+            "assets": [
+              "apps/cortex-ui/src/favicon.ico",
+              "apps/cortex-ui/src/assets"
+            ],
+            "styles": ["apps/cortex-ui/src/styles.css"],
+            "scripts": [],
+            "webpackConfig": "@nrwl/react/plugins/webpack"
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/cortex-ui/src/environments/environment.ts",
+                  "with": "apps/cortex-ui/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/web:dev-server",
+          "options": {
+            "buildTarget": "cortex-ui:build",
+            "hmr": true
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "cortex-ui:build:production",
+              "hmr": false
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/cortex-ui/**/*.{ts,tsx,js,jsx}"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/cortex-ui"],
+          "options": {
+            "jestConfig": "apps/cortex-ui/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "cortex-ui-e2e": {
+      "root": "apps/cortex-ui-e2e",
+      "sourceRoot": "apps/cortex-ui-e2e/src",
+      "projectType": "application",
+      "targets": {
+        "e2e": {
+          "executor": "@nrwl/cypress:cypress",
+          "options": {
+            "cypressConfig": "apps/cortex-ui-e2e/cypress.json",
+            "tsConfig": "apps/cortex-ui-e2e/tsconfig.e2e.json",
+            "devServerTarget": "cortex-ui:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "cortex-ui:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/cortex-ui-e2e/**/*.{js,ts}"]
+          }
+        }
+      }
+    }
+  }
+}
