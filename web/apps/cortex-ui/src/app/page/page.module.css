@@ -1,0 +1,45 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto);
+
+.app {
+  font-family: "Roboto", -apple-system, sans-serif;
+  @apply w-full h-full bg-gray-200;
+}
+
+.drawer {
+  @apply absolute left-0 top-0 bottom-0 bg-gray-700 max-w-0 opacity-0 overflow-hidden shadow-lg;
+  transition: max-width .3s, opacity .3s;
+}
+
+.drawerOpen {
+  @apply max-w-full opacity-100;
+  width: 500px;
+}
+
+.content {
+  @apply h-full;
+  overflow-y: auto;
+}
+
+.container {
+  @apply lg:container mx-auto;
+}
+
+.toolbar {
+  @apply h-12 bg-gray-800 flex
+}
+
+.hamburger {
+  @apply text-gray-200 p-2
+}
+
+.breadcrumb {
+  @apply mx-0.5 no-underline text-blue-500
+}
+
+.breadcrumb:after {
+  @apply ml-1 text-gray-400;
+}
+
+.breadcrumb:not(:last-child):after {
+  content: "/";
+}
