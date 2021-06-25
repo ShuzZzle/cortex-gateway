@@ -28,6 +28,14 @@
       "sourceRoot": "apps/cortex-ui/src",
       "projectType": "application",
       "targets": {
+        "types": {
+          "executor": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": ["node scripts/generate-path-types"],
+            "cwd": "apps/cortex-ui",
+            "parallel": true
+          }
+        },
         "build": {
           "executor": "@nrwl/web:build",
           "outputs": ["{options.outputPath}"],
@@ -39,7 +47,12 @@
             "tsConfig": "apps/cortex-ui/tsconfig.app.json",
             "assets": [
               "apps/cortex-ui/src/favicon.ico",
-              "apps/cortex-ui/src/assets"
+              "apps/cortex-ui/src/assets",
+              {
+                "input": "libs/icons/src",
+                "glob": "*.!(ts|html)",
+                "output": "icons"
+              }
             ],
             "styles": ["apps/cortex-ui/src/styles.css"],
             "scripts": [],
@@ -121,6 +134,20 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["apps/cortex-ui-e2e/**/*.{js,ts}"]
+          }
+        }
+      }
+    },
+    "icons": {
+      "root": "libs/icons",
+      "sourceRoot": "libs/icons/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": ["npx fantasticon"],
+            "cwd": "libs/icons"
           }
         }
       }

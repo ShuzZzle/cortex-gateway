@@ -1,3 +1,3 @@
 module.exports = {
-  projects: ['<rootDir>/apps/cortex-ui'],
+  projects: ['<rootDir>/apps/cortex-ui', '<rootDir>/libs/icons'],
 };

@@ -14,12 +14,7 @@
     "default": {
       "runner": "@nrwl/nx-cloud",
       "options": {
-        "cacheableOperations": [
-          "build",
-          "lint",
-          "test",
-          "e2e"
-        ],
+        "cacheableOperations": ["build", "lint", "test", "e2e"],
         "accessToken": "YTBlZDlmMWUtMDUxMC00YzNhLTg0NGEtOWNkZWM1MzQwNmRmfHJlYWQtd3JpdGU=",
         "canTrackAnalytics": false,
         "showUsageWarnings": true
@@ -32,9 +27,10 @@
     },
     "cortex-ui-e2e": {
       "tags": [],
-      "implicitDependencies": [
-        "cortex-ui"
-      ]
+      "implicitDependencies": ["cortex-ui"]
+    },
+    "icons": {
+      "tags": []
     }
   }
 }

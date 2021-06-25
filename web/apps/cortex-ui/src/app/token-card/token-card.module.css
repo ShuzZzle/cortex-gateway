@@ -18,7 +18,21 @@
 }
 
 .header {
-  @apply bg-gray-50 block w-full px-2 pt-0.5 mb-1 shadow-sm rounded;
+  @apply bg-gray-50 block w-full px-2 pt-0.5 mb-1 shadow-sm rounded-t flex flex-row justify-between;
+  --stop1: transparent;
+  --stop2: transparent;
+  --stop3: transparent;
+  --stop4: transparent;
+  /* linear-gradient(75deg, ${color} 0%, ${color} 5%, ${end} 40%, rgba(0,0,0,0) 100%) */
+  background: linear-gradient(75deg, var(--stop1) 0%, var(--stop2) 40%, var(--stop3) 70%, var(--stop4) 100%);
+}
+
+.tenant {
+  @apply truncate;
+}
+
+.expiry {
+  @apply text-sm flex-shrink-0;
 }
 
 .card:hover .header,
@@ -46,4 +60,8 @@
 .card:focus .actions {
   @apply opacity-100;
   pointer-events: all;
+}
+
+.icon {
+  @apply pr-1;
 }

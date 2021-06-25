@@ -1,0 +1,41 @@
+export type Path<Source> = (keyof Source & string) | Path0<Source>;
+
+type Path0<Source> = Path1<Source> | {
+  [Key0 in keyof Source]: `${Key0 & string}/${keyof Source[Key0] & string}`;
+}[keyof Source];
+
+type Path1<Source> = Path2<Source> | {
+  [Key0 in keyof Source]: {
+    [Key1 in keyof Source[Key0]]: `${Key0 & string}/${Key1 & string}/${keyof Source[Key0][Key1] & string}`;
+  }[keyof Source[Key0]];
+}[keyof Source];
+
+type Path2<Source> = Path3<Source> | {
+  [Key0 in keyof Source]: {
+    [Key1 in keyof Source[Key0]]: {
+      [Key2 in keyof Source[Key0][Key1]]: `${Key0 & string}/${Key1 & string}/${Key2 & string}/${keyof Source[Key0][Key1][Key2] & string}`;
+    }[keyof Source[Key0][Key1]];
+  }[keyof Source[Key0]];
+}[keyof Source];
+
+type Path3<Source> = Path4<Source> | {
+  [Key0 in keyof Source]: {
+    [Key1 in keyof Source[Key0]]: {
+      [Key2 in keyof Source[Key0][Key1]]: {
+        [Key3 in keyof Source[Key0][Key1][Key2]]: `${Key0 & string}/${Key1 & string}/${Key2 & string}/${Key3 & string}/${keyof Source[Key0][Key1][Key2][Key3] & string}`;
+      }[keyof Source[Key0][Key1][Key2]];
+    }[keyof Source[Key0][Key1]];
+  }[keyof Source[Key0]];
+}[keyof Source];
+
+type Path4<Source> = {
+  [Key0 in keyof Source]: {
+    [Key1 in keyof Source[Key0]]: {
+      [Key2 in keyof Source[Key0][Key1]]: {
+        [Key3 in keyof Source[Key0][Key1][Key2]]: {
+          [Key4 in keyof Source[Key0][Key1][Key2][Key3]]: `${Key0 & string}/${Key1 & string}/${Key2 & string}/${Key3 & string}/${Key4 & string}/${keyof Source[Key0][Key1][Key2][Key3][Key4] & string}`;
+        }[keyof Source[Key0][Key1][Key2][Key3]];
+      }[keyof Source[Key0][Key1][Key2]];
+    }[keyof Source[Key0][Key1]];
+  }[keyof Source[Key0]];
+}[keyof Source];

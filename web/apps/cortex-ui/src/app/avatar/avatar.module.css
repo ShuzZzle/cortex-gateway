@@ -1,0 +1,16 @@
+
+.avatar {
+  @apply flex flex-row mx-2;
+}
+
+.image {
+  @apply object-cover h-auto w-full;
+}
+
+.display {
+  @apply h-9 w-9 overflow-hidden rounded-full m-1 shadow-inner;
+}
+
+.info {
+  @apply flex flex-col text-gray-200 text-sm m-1;
+}

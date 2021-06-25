@@ -1,12 +1,15 @@
-const configure = require("@nrwl/react/plugins/webpack");
+const nrwlConfig = require("@nrwl/react/plugins/webpack.js");
 
 module.exports = (config) => {
-  configure(config);
-
+  nrwlConfig(config);
   config.module.rules.push({
-    test: /\.css$/,
-    use: ["postcss-loader"]
-  });
-
+    test: /\.css$|\.scss$|\.sass$|\.less$|\.styl$/,
+    loader: "postcss-loader",
+    options: {
+      postcssOptions: {
+        path: `${__dirname}/postcss.config.js`
+      }
+    }
+  })
   return config;
-}
+};
