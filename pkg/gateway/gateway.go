@@ -43,15 +43,14 @@ func New(cfg Config, svr *server.Server) (*Gateway, error) {
 	}, nil
 }
 
-
-// RegisterRoutes binds all to be piped routes to their handlers
+// RegisterRoutes binds all to be piped routes to their services
 func (g *Gateway) RegisterRoutes() {
-	g.server.HTTP.Path("/all_user_stats").HandlerFunc(g.distributorProxy.Handler)
-	g.server.HTTP.Path("/api/prom/push").Handler(AuthenticateTenant.Wrap(http.HandlerFunc(g.distributorProxy.Handler)))
-	g.server.HTTP.Path("/api/experimental/prom/push").Handler(AuthenticateTenant.Wrap(http.HandlerFunc(g.distributorClient.PromToCortexHandler)))
-	g.server.HTTP.PathPrefix("/api").Handler(AuthenticateTenant.Wrap(http.HandlerFunc(g.queryFrontendProxy.Handler)))
-	g.server.HTTP.Path("/health").HandlerFunc(g.healthCheck)
-	g.server.HTTP.PathPrefix("/").HandlerFunc(g.notFoundHandler)
+	//g.server.HTTP.Path("/all_user_stats").HandlerFunc(g.distributorProxy.Handler)
+	//g.server.HTTP.Path("/api/prom/push").Handler(http.HandlerFunc(g.distributorProxy.Handler))
+	//g.server.HTTP.Path("/api/experimental/prom/push").Handler(http.HandlerFunc(g.distributorClient.PromToCortexHandler))
+	//g.server.HTTP.PathPrefix("/api").Handler(http.HandlerFunc(g.queryFrontendProxy.Handler))
+	//g.server.HTTP.Path("/health").HandlerFunc(g.healthCheck)
+	//g.server.HTTP.PathPrefix("/").HandlerFunc(g.notFoundHandler)
 }
 
 func (g *Gateway) healthCheck(w http.ResponseWriter, r *http.Request) {

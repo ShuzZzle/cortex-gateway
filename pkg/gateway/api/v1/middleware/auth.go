@@ -1,21 +1,19 @@
-package gateway
+package middleware
 
 import (
-	"flag"
 	"fmt"
 	cortexLog "github.com/cortexproject/cortex/pkg/util/log"
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	jwtReq "github.com/dgrijalva/jwt-go/request"
+	"github.com/gin-gonic/gin"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/weaveworks/common/middleware"
 	"net/http"
 )
 
 var (
-	jwtSecret    string
 	authFailures = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "cortex_gateway",
 		Name:      "failed_authentications_total",
@@ -28,21 +26,34 @@ var (
 	}, []string{"tenant"})
 )
 
-func init() {
-	flag.StringVar(&jwtSecret, "gateway.auth.jwt-secret", "", "Secret to sign JSON Web Tokens")
+type tenant struct {
+	TenantID string `json:"tenant_id"`
+	Audience string `json:"aud"`
+	Version  uint8  `json:"version"`
 }
 
-// AuthenticateTenant validates the Bearer Token and attaches the TenantID to the request
-var AuthenticateTenant = middleware.Func(func(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := log.With(cortexLog.WithContext(r.Context(), cortexLog.Logger), "ip_address", r.RemoteAddr)
-		level.Debug(logger).Log("msg", "authenticating request", "route", r.RequestURI)
+// Valid returns an error if JWT payload is incomplete
+func (t *tenant) Valid() error {
+	if t.TenantID == "" {
+		return fmt.Errorf("tenant is empty")
+	}
+
+	return nil
+}
 
 
-		tokenString := r.Header.Get("Authorization") // Get operation is case insensitive
+func AuthenticateJWT(jwtSecret string) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		request := context.Request
+		writer := context.Writer
+		logger := log.With(cortexLog.WithContext(request.Context(), cortexLog.Logger), "ip_address", request.RemoteAddr)
+		level.Debug(logger).Log("msg", "authenticating request", "route", request.RequestURI)
+
+
+		tokenString := request.Header.Get("Authorization") // Get operation is case insensitive
 		if tokenString == "" {
 			level.Info(logger).Log("msg", "no bearer token provided")
-			http.Error(w, "No bearer token provided", http.StatusUnauthorized)
+			http.Error(writer, "No bearer token provided", http.StatusUnauthorized)
 			authFailures.WithLabelValues("no_token").Inc()
 
 			return
@@ -51,24 +62,25 @@ var AuthenticateTenant = middleware.Func(func(next http.Handler) http.Handler {
 		// Try to parse and validate JWT
 		te := &tenant{}
 		_, err := jwtReq.ParseFromRequest(
-			r,
+			request,
 			jwtReq.AuthorizationHeaderExtractor,
+			//TODO: Switch library since its not maintained a has open CVE's
 			func(token *jwt.Token) (interface{}, error) {
 				// Only HMAC algorithms accepted - algorithm validation is super important!
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					level.Info(logger).Log("msg", "unexpected signing method", "used_method", token.Header["alg"])
-					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+					return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 				}
 
 				return []byte(jwtSecret), nil
 			},
 			jwtReq.WithClaims(te))
 
-		// If Tenant's Valid method returns false an error will be set as well, hence there is no need
+		// If tenant's Valid method returns false an error will be set as well, hence there is no need
 		// to additionally check the parsed token for "Valid"
 		if err != nil {
 			level.Info(logger).Log("msg", "invalid bearer token", "err", err.Error())
-			http.Error(w, "Invalid bearer token", http.StatusUnauthorized)
+			http.Error(writer, "Invalid bearer token", http.StatusUnauthorized)
 			authFailures.WithLabelValues("token_not_valid").Inc()
 
 			return
@@ -76,7 +88,7 @@ var AuthenticateTenant = middleware.Func(func(next http.Handler) http.Handler {
 
 		// Token is valid
 		authSuccess.WithLabelValues(te.TenantID).Inc()
-		r.Header.Set("X-Scope-OrgID", te.TenantID)
-		next.ServeHTTP(w, r)
-	})
-})
+		request.Header.Set("X-Scope-OrgID", te.TenantID)
+		//next.ServeHTTP(writer, request)
+	}
+}

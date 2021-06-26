@@ -1,0 +1,16 @@
+apiVersion: skaffold/v2beta16
+kind: Config
+metadata:
+  name: cortex-gateway
+build:
+  artifacts:
+  - image: shuzzzle/cortex-gateway
+    custom:
+      buildCommand: ./build.sh
+      dependencies:
+        paths:
+          - .
+deploy:
+  kubectl:
+    manifests:
+    - deployments/cortex-gateway.yml

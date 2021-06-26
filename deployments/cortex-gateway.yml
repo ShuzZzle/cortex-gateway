@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortex-gateway
+  namespace: cortex
+  labels:
+    cluster: cortex
+    app: cortex-gateway
+spec:
+  selector:
+    app: cortex-gateway
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      name: http
+      protocol: TCP
+    - port: 9095
+      targetPort: grpc
+      name: grpc
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cortex-gateway
+  namespace: cortex
+spec:
+  rules:
+    - host: cortex-gateway.cortex.de-cgn.psmanaged.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: cortex-gateway
+                port:
+                  number: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: cortex
+  name: cortex-gateway
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: cortex-gateway
+  template:
+    metadata:
+      labels:
+        app: cortex-gateway
+    spec:
+      containers:
+        - name: cortex-gateway
+          imagePullPolicy: Always
+          image: shuzzzle/cortex-gateway:latest
+          args:
+            - "-gateway.distributor.address=$(DISTRIBUTOR_ADDRESS)"
+            - "-gateway.query-frontend.address=$(QUERY_FRONTEND_ADDRESS)"
+            - "-gateway.auth.jwt-secret=$(JWT_SECRET)"
+          env:
+            - name: JWT_SECRET
+              value: "SUPERSECRET"
+            - name: DISTRIBUTOR_ADDRESS
+              value: "http://cortex-distributor.cortex.svc.cluster.local:8080"
+            - name: QUERY_FRONTEND_ADDRESS
+              value: "http://cortex-query-frontend.cortex.svc.cluster.local:8080"
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 9095
+              name: grpc
+              protocol: TCP

@@ -22,7 +22,7 @@ ENV GOOS=linux
 ENV GOARCH=amd64
 ENV GOPROXY ${GOPROXY:-https://proxy.golang.org}
 
-RUN go mod download -x
+RUN go mod download
 ARG VERSION=unknown
 ARG GOPROXY
 

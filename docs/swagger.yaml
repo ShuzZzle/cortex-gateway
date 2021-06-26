@@ -1,0 +1,193 @@
+basePath: /api/v1
+definitions:
+  app.JSONResult:
+    properties:
+      code:
+        type: integer
+      data:
+        type: object
+      message:
+        type: string
+    type: object
+  models.Token:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      jwt:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.TokenExtraClaim:
+    properties:
+      team:
+        type: string
+      tenant:
+        type: string
+    type: object
+  models.TokenRequest:
+    properties:
+      audience:
+        items:
+          type: string
+        type: array
+      data:
+        $ref: '#/definitions/models.TokenExtraClaim'
+        description: |-
+          Expire string
+          NotBefore string
+          IssuedAt string
+      issuer:
+        type: string
+      subject:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: this is the API for the cortex-gateway
+  title: cortex-gateway API
+  version: "1.0"
+paths:
+  /tokens:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all the Tokens
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/app.JSONResult'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Token'
+                  type: array
+              type: object
+      summary: Retrieves all the Tokens
+      tags:
+      - tokens
+    post:
+      consumes:
+      - application/json
+      description: Creates a JWT Token with embedded Team and Tenant
+      parameters:
+      - description: Create a Token
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.TokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/app.JSONResult'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Token'
+              type: object
+      summary: Creates a Token
+      tags:
+      - tokens
+  /tokens/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a Token
+      operationId: delete-token-by-id
+      parameters:
+      - description: Object ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.JSONResult'
+      summary: Deletes a Token
+      tags:
+      - tokens
+    get:
+      consumes:
+      - application/json
+      description: Retrieves one token by id
+      operationId: get-token-by-id
+      parameters:
+      - description: Object ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/app.JSONResult'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Token'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.JSONResult'
+      summary: Retrieves one token by id
+      tags:
+      - tokens
+    put:
+      consumes:
+      - application/json
+      description: Updates a Token
+      parameters:
+      - description: Update a Token
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.TokenRequest'
+      - description: Object ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/app.JSONResult'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Token'
+              type: object
+      summary: Updates a Token
+      tags:
+      - tokens
+securityDefinitions:
+  OAuth2Implicit:
+    authorizationUrl: http://localhost:8100/auth/realms/cortex-gateway/protocol/openid-connect/auth
+    flow: implicit
+    type: oauth2
+swagger: "2.0"

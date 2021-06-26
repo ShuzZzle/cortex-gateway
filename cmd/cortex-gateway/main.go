@@ -3,12 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	testgw "github.com/ShuzZzle/cortex-gateway/pkg/gateway"
+	"github.com/ShuzZzle/cortex-gateway/pkg/gateway"
 	"github.com/ShuzZzle/cortex-gateway/pkg/gateway/api"
+	"github.com/ShuzZzle/cortex-gateway/pkg/gateway/database"
 	cortexLog "github.com/cortexproject/cortex/pkg/util/log"
 	"github.com/gorilla/mux"
 	"net/http"
 	"os"
+	"runtime"
 
 	"github.com/cortexproject/cortex/pkg/util/flagext"
 	"github.com/opentracing-contrib/go-stdlib/nethttp"
@@ -29,6 +31,7 @@ func main() {
 	})
 
 	var (
+		ballast []byte
 		serverCfg = server.Config{
 			HTTPListenPort: 8080,
 			MetricsNamespace: "cortex_gateway",
@@ -41,7 +44,7 @@ func main() {
 				middleware.ServerUserHeaderInterceptor,
 			},
 		}
-		gatewayCfg testgw.Config
+		gatewayCfg gateway.Config
 	)
 
 	flagext.RegisterFlags(&serverCfg, &gatewayCfg)
@@ -52,14 +55,18 @@ func main() {
 		os.Exit(0)
 	}
 
+	if gatewayCfg.BallastBytes > 0 {
+		ballast = make([]byte, gatewayCfg.BallastBytes)
+	}
+
 	cortexLog.InitLogger(&serverCfg)
 
 	// Must be done after initializing the logger, otherwise no log message is printed
 	err := gatewayCfg.Validate()
-	cortexLog.CheckFatal("validating gateway config", err)
+	cortexLog.CheckFatal("validating cortexGateway config", err)
 
 	// Setting the environment variable JAEGER_AGENT_HOST enables tracing
-	trace, err := tracing.NewFromEnv("cortex-gateway")
+	trace, err := tracing.NewFromEnv("cortex-cortexGateway")
 	cortexLog.CheckFatal("initializing tracing", err)
 	defer trace.Close()
 
@@ -68,20 +75,28 @@ func main() {
 	defer svr.Shutdown()
 
 	// Setup proxy and register routes
-	gateway, err := testgw.New(gatewayCfg, svr)
-	cortexLog.CheckFatal("initializing gateway", err)
-	gateway.RegisterRoutes()
+	cortexGateway, err := gateway.New(gatewayCfg, svr)
+	cortexLog.CheckFatal("initializing cortexGateway", err)
+	cortexGateway.RegisterRoutes()
 
-	defer gateway.Close()
+	defer cortexGateway.Close()
+
+	mongoDB, err := database.Init(&gatewayCfg)
+	if err != nil {
+		//unreachable since database error panics the program
+		panic(err)
+	}
+	defer mongoDB.Close()
 
 	weaveServer := svr.HTTPServer
+	// basically /metrics and /debug/pprof
 	originalHandler := weaveServer.Handler
 	muxRouter := mux.NewRouter()
-	webApp := testgw.SpaHandler{StaticPath: "web/apps/cortex-ui/dist", IndexPath: "index.html"}
-	muxRouter.PathPrefix("/cortex-ui").Handler(webApp)
-	muxRouter.PathPrefix("/cortex-api").Handler(api.InitRouter())
+	muxRouter.PathPrefix("/ui").Handler(gateway.AssetHandler("/ui"))
+	muxRouter.PathPrefix("/api").Handler(api.InitV1Router(&gatewayCfg, mongoDB))
 	muxRouter.PathPrefix("/").Handler(originalHandler)
 	weaveServer.Handler = muxRouter
 
 	svr.Run()
+	runtime.KeepAlive(ballast)
 }

@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"github.com/ShuzZzle/cortex-gateway/pkg/gateway/util"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -57,7 +58,7 @@ func newDirector(targetURL *url.URL) func(req *http.Request) {
 		req.URL.Scheme = targetURL.Scheme
 		req.URL.Host = targetURL.Host
 		req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
-		req.URL.Path = singleJoiningSlash(targetURL.Path, req.URL.Path)
+		req.URL.Path = util.SingleJoiningSlash(targetURL.Path, req.URL.Path)
 		req.Host = targetURL.Host
 		if targetQuery == "" || req.URL.RawQuery == "" {
 			req.URL.RawQuery = targetQuery + req.URL.RawQuery

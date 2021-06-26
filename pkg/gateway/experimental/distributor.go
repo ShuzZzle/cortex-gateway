@@ -76,7 +76,7 @@ func PromToCortex(ctx context.Context, r *http.Request, maxRecvMsgSize int) (*co
 	var req cortexpb.PreallocWriteRequest
 	err := util.ParseProtoReader(ctx, r.Body, int(r.ContentLength), maxRecvMsgSize, &req, util.RawSnappy)
 	if err != nil {
-		return nil, errors.New("err: " + err.Error())
+		return nil, errors.New(err.Error())
 	}
 	req.SkipLabelNameValidation = false
 

@@ -10,13 +10,19 @@ import (
 type Config struct {
 	DistributorAddress   string
 	QueryFrontendAddress string
+	JWTSecret			 string
 	VersionFlag bool
+	BallastBytes int
+	DatabaseURI string
 }
 
 // RegisterFlags adds the flags required to config this package's Config struct
 func (cfg *Config) RegisterFlags(f *flag.FlagSet) {
+	f.IntVar(&cfg.BallastBytes, "mem-ballast-size-bytes", 0, "Size of memory ballast to allocate.")
 	f.StringVar(&cfg.DistributorAddress, "gateway.distributor.address", "", "Upstream HTTP URL for Cortex Distributor")
 	f.StringVar(&cfg.QueryFrontendAddress, "gateway.query-frontend.address", "", "Upstream HTTP URL for Cortex Query Frontend")
+	f.StringVar(&cfg.JWTSecret, "gateway.auth.jwt-secret", "", "Secret to sign JSON Web Tokens")
+	f.StringVar(&cfg.DatabaseURI, "database.uri", "mongodb://<user>:<password>@<host>:27017", "Full URI (including user + pw)")
 	f.BoolVar(&cfg.VersionFlag, "version", false, "Print version and exit")
 }
 
