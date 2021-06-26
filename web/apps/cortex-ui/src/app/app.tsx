@@ -70,10 +70,10 @@ export function App() {
     setOpen(it => !it)
   }, [open, setOpen]);
 
-  const toolbar = <>
+  const toolbar = <div>
     <Spacer/>
     <Avatar src={user.avatar} name={user.name} description={user.team.name}/>
-  </>;
+  </div>;
 
 
   return (
