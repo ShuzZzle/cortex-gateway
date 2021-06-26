@@ -1,4 +1,5 @@
 import { useStore } from "@propero/easy-store-react";
+import { SidebarBase } from "apps/cortex-ui/src/app/sidebar/sidebar-base";
 import { Avatar } from "./avatar/avatar";
 import { MessageBox } from "./dialog/message-box";
 import { Spacer } from "./spacer/spacer";
@@ -35,7 +36,7 @@ const sidebar: MenuEntryProps[] = [
   },
   {
     label: "Tokens",
-    icon: "lock",
+    icon: "user-id",
     to: "/tokens",
     match: "/tokens",
   },
@@ -76,22 +77,24 @@ export function App() {
 
 
   return (
-    <BrowserRouter>
-      <Menu items={sidebar} open={open}>
-        <Page toolbar={toolbar} crumbs={crumbs}>
-          <div className="flex flex-row flex-wrap" onClick={toggle}>
-            {tokens.map(token => <TokenCard {...token} />)}
-          </div>
-          <MessageBox
-            open={false}
-            title="Are you sure?"
-            text="This Action will delete all the databases in existence."
-            options={[{ text: "Cancel" }, { text: "Confirm" }]}
-            closeOption={{ text: "Confirm" }}
-            onAction={(action) => console.log("a", action)}
-          />
-        </Page>
-      </Menu>
+    <BrowserRouter basename="/ui">
+      <SidebarBase top static content={toolbar}>
+        <Menu items={sidebar} open={open}>
+          <Page toolbar={toolbar} crumbs={crumbs}>
+            <div className="flex flex-row flex-wrap">
+              {tokens.map(token => <TokenCard {...token} />)}
+            </div>
+            <MessageBox
+              open={false}
+              title="Are you sure?"
+              text="This Action will delete all the databases in existence."
+              options={[{ text: "Cancel" }, { text: "Confirm" }]}
+              closeOption={{ text: "Confirm" }}
+              onAction={(action) => console.log("a", action)}
+            />
+          </Page>
+        </Menu>
+      </SidebarBase>
     </BrowserRouter>
   );
 }
