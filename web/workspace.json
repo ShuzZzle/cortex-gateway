@@ -41,6 +41,7 @@
           "outputs": ["{options.outputPath}"],
           "options": {
             "outputPath": "dist/apps/cortex-ui",
+            "baseHref": "/ui/",
             "index": "apps/cortex-ui/src/index.html",
             "main": "apps/cortex-ui/src/main.tsx",
             "polyfills": "apps/cortex-ui/src/polyfills.ts",

@@ -1,5 +1,6 @@
 import { useStore } from "@propero/easy-store-react";
-import { SidebarBase } from "apps/cortex-ui/src/app/sidebar/sidebar-base";
+import { SidebarBase } from "./sidebar/sidebar-base";
+import { User } from "../types";
 import { Avatar } from "./avatar/avatar";
 import { MessageBox } from "./dialog/message-box";
 import { Spacer } from "./spacer/spacer";
@@ -56,23 +57,19 @@ const sidebar: MenuEntryProps[] = [
 
 export function App() {
   const [crumbs] = useStore(breadcrumbs);
-  const user = {
-    name: "Max Mustermann",
-    email: "max.mustermann@example.com",
-    id: 127198632,
-    team: { id: 211232131312, name: "Employee" },
-    avatar: "https://picsum.photos/256/256"
-  };
+  // const { user, loginWithPopup } = useAuth0<User>();
+  // if (!user) throw loginWithPopup();
+  const user = { name: "Hans", team: { name: "Team" }, avatar: "https://picsum.photos/64/64" };
 
   const [open, setOpen] = useState(false);
 
   const toggle = useCallback(() => {
     setOpen(it => !it)
-  }, [open, setOpen]);
+  }, [setOpen]);
 
   const toolbar = <div>
     <Spacer/>
-    <Avatar src={user.avatar} name={user.name} description={user.team.name}/>
+    <Avatar src={user?.avatar} name={user?.name} description={user?.team.name}/>
   </div>;
 
 
