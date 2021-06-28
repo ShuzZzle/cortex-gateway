@@ -30,9 +30,9 @@ const (
 // @BasePath /api/v1
 // @in header
 // @name Authorization
-// @securitydefinitions.oauth2.implicit OAuth2Implicit
-// @tokenUrl http://localhost:8100/auth/realms/cortex-gateway/protocol/openid-connect/token
-// @authorizationurl http://localhost:8100/auth/realms/cortex-gateway/protocol/openid-connect/auth
+// @securitydefinitions.oauth2.application OAuth2Application
+// @tokenUrl http://keycloak.cortex.dev.de-cgn.get-cloud.io/auth/realms/cortex-gateway/protocol/openid-connect/token
+// @authorizationurl http://keycloak.cortex.dev.de-cgn.get-cloud.io/auth/realms/cortex-gateway/protocol/openid-connect/auth
 func InitV1Router(config *gateway.Config, database *database.Database) *gin.Engine {
 	r := gin.New()
 	store := cookie.NewStore(securecookie.GenerateRandomKey(32))
@@ -40,7 +40,9 @@ func InitV1Router(config *gateway.Config, database *database.Database) *gin.Engi
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	//TODO: Make port parameterized
+	oauth2Config := oauth2.NewAuthConfiguration(database)
+
+
 	url := ginSwagger.URL("/api/swagger/doc.json")
 	r.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	r.GET("/api/login", oauth2Config.Login)
@@ -58,12 +60,6 @@ func InitV1Router(config *gateway.Config, database *database.Database) *gin.Engi
 	return r
 }
 
-var oauth2Config *oauth2.Configuration
-
 func helloworld(ctx *gin.Context)  {
 	ctx.Writer.Write([]byte("protected!"))
-}
-
-func init() {
-	oauth2Config = oauth2.NewAuthConfiguration()
 }

@@ -295,10 +295,10 @@
         }
     },
     "securityDefinitions": {
-        "OAuth2Implicit": {
+        "OAuth2Application": {
             "type": "oauth2",
-            "flow": "implicit",
-            "authorizationUrl": "http://localhost:8100/auth/realms/cortex-gateway/protocol/openid-connect/auth"
+            "flow": "application",
+            "tokenUrl": "http://keycloak.cortex.dev.de-cgn.get-cloud.io/auth/realms/cortex-gateway/protocol/openid-connect/token"
         }
     }
 }

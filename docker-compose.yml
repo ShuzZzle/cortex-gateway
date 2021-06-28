@@ -8,31 +8,27 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
-  mysql:
-    image: mysql:5.7
     volumes:
-      - mysql_data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: keycloak
-      MYSQL_USER: keycloak
-      MYSQL_PASSWORD: password
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    environment:
-      DB_VENDOR: MYSQL
-      DB_ADDR: mysql
-      DB_DATABASE: keycloak
-      DB_USER: keycloak
-      DB_PASSWORD: password
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: Pa55w0rd
-      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the MySQL JDBC driver documentation in order to use it.
-      #JDBC_PARAMS: "connectTimeout=30000"
+      - mongodb_data:/data/db
+  cortex-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: "dev"
     ports:
-      - 8100:8080
+    - 8080:8080
+    command:
+      - -gateway.distributor.address=http://localhost:9400
+      - -gateway.query-frontend.address=http://localhost
+      - -gateway.auth.jwt-secret=SUPERSECRET
+      - -server.http-listen-port=8080
+      - -database.uri=mongodb://admin:admin@mongo:27017
+    environment:
+      KEYCLOAK_PROVIDER_URL: ${KEYCLOAK_PROVIDER_URL}
+      CLIENT_SECRET: ${CLIENT_SECRET}
     depends_on:
-      - mysql
+      - mongo
 volumes:
-  mysql_data:
+  mongodb_data:
     driver: local

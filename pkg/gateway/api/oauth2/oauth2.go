@@ -2,14 +2,15 @@ package oauth2
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/ShuzZzle/cortex-gateway/pkg/gateway/api/v1/models"
+	"github.com/ShuzZzle/cortex-gateway/pkg/gateway/database"
 	"github.com/ShuzZzle/cortex-gateway/pkg/gateway/util"
 	"github.com/coreos/go-oidc"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
@@ -22,7 +23,14 @@ type Configuration struct {
 	oauth2Config oauth2.Config
 	oidcConfig   *oidc.Config
 	verifier     *oidc.IDTokenVerifier
+	database	 *database.Database
 }
+
+type JWTClaims struct {
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+}
+
 
 
 func GetAccessToken(ctx *gin.Context) (string, error){
@@ -80,7 +88,7 @@ func (config *Configuration) Authenticate() gin.HandlerFunc {
 
 func (config *Configuration) Login(ctx *gin.Context) {
 	accessToken, err := GetAccessToken(ctx)
-	state := util.RandStringRunes(15)
+	state := util.RandStringRunes(16)
 	ctx.SetCookie("oauth2_state", state, 180, "/", "localhost", true, true)
 	redirectUri := ctx.Query("redirect_uri")
 	config.oauth2Config.RedirectURL = PushRedirect("http://localhost:8080/api/callback", redirectUri)
@@ -100,9 +108,32 @@ func (config *Configuration) Login(ctx *gin.Context) {
 }
 
 func (config *Configuration) Logout(ctx *gin.Context) {
-	redirectUrl := "http://localhost:8080/metrics"
-	logoutUrl := fmt.Sprintf("%s/protocol/openid-connect/logout?redirect_uri=%s", config.providerURL, url.QueryEscape(redirectUrl))
+	redirectUri := ctx.Query("redirect_uri")
+	if redirectUri == "" {
+		redirectUri = "http://localhost:8080/ui"
+	}
+	logoutUrl := fmt.Sprintf("%s/protocol/openid-connect/logout?redirect_uri=%s", config.providerURL, url.QueryEscape(redirectUri))
 	ctx.Redirect(http.StatusFound, logoutUrl)
+}
+
+func (config *Configuration) GetUser(ctx *gin.Context, email string) {
+	session := sessions.Default(ctx)
+	// Try to find User by email
+	userEntity := models.NewUserEntity(config.database.MongoDatabase)
+	user, err := userEntity.Read(email)
+	if err == mongo.ErrNoDocuments {
+		// Create User
+		user, err = userEntity.Create(email)
+		if err != nil {
+			// Error creating User
+			fmt.Println(err)
+		}
+	} else {
+		// Something bad happened
+		fmt.Println(err)
+	}
+	session.Set("user", user)
+	session.Save()
 }
 
 func (config *Configuration) Callback(ctx *gin.Context) {
@@ -140,25 +171,23 @@ func (config *Configuration) Callback(ctx *gin.Context) {
 		return
 	}
 
+	idtokenClaims := JWTClaims{}
 	resp := struct {
 		OAuth2Token   *oauth2.Token
-		IDTokenClaims *json.RawMessage // ID Token payload is just JSON.
-	}{oauth2Token, new(json.RawMessage)}
+		IDTokenClaims *JWTClaims // ID Token payload is just JSON.
+	}{oauth2Token, &idtokenClaims}
 
 	if err = idToken.Claims(&resp.IDTokenClaims); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	_, err = json.MarshalIndent(resp, "", "    ")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+
+	fmt.Println(idtokenClaims.Email)
 
 	session := sessions.Default(ctx)
-	if _, userFound := session.Get("user").(models.User); !userFound {
-		session.Set("user", models.User{})
-		session.Save()
+	if _, userCookieFound := session.Get("user").(models.User); !userCookieFound {
+		//TODO: Do this everytime?!
+		config.GetUser(ctx, "")
 	}
 
 	SetAccessToken(ctx, oauth2Token.AccessToken)
@@ -167,7 +196,7 @@ func (config *Configuration) Callback(ctx *gin.Context) {
 	ctx.Redirect(http.StatusFound, redirectUri)
 }
 
-func NewAuthConfiguration() *Configuration {
+func NewAuthConfiguration(db *database.Database) *Configuration {
 	ctx := context.Background()
 	providerURL := fmt.Sprintf("%s/auth/realms/cortex-gateway", os.Getenv("KEYCLOAK_PROVIDER_URL"))
 	provider, err := oidc.NewProvider(ctx, providerURL)
@@ -183,6 +212,7 @@ func NewAuthConfiguration() *Configuration {
 		providerURL: providerURL,
 		oidcConfig:  oidcConfig,
 		verifier:    verifier,
+		database: db,
 		oauth2Config: struct {
 			ClientID     string
 			ClientSecret string

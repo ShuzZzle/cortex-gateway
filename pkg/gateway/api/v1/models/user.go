@@ -36,7 +36,7 @@ func (u userEntity) Read(email string) (*User, error) {
 	defer cancel()
 	filter := bson.M{"email": email}
 	res := u.collection.FindOne(ctx, filter)
-	if res.Err() != nil {
+	if res.Err() == mongo.ErrNoDocuments {
 		return nil, res.Err()
 	}
 	user := User{}

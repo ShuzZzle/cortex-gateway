@@ -186,8 +186,8 @@ paths:
       tags:
       - tokens
 securityDefinitions:
-  OAuth2Implicit:
-    authorizationUrl: http://localhost:8100/auth/realms/cortex-gateway/protocol/openid-connect/auth
-    flow: implicit
+  OAuth2Application:
+    flow: application
+    tokenUrl: http://keycloak.cortex.dev.de-cgn.get-cloud.io/auth/realms/cortex-gateway/protocol/openid-connect/token
     type: oauth2
 swagger: "2.0"

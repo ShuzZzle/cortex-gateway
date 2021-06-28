@@ -40,7 +40,6 @@ require (
 	github.com/ugorji/go v1.2.6 // indirect
 	github.com/weaveworks/common v0.0.0-20210112142934-23c8d7fa6120
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
-	github.com/zricethezav/gitleaks/v7 v7.5.0 // indirect
 	go.mongodb.org/mongo-driver v1.5.3
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
