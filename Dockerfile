@@ -31,14 +31,15 @@ COPY cmd/ cmd/
 COPY docs/ docs/
 COPY webapp.go ./
 COPY --from=website /web/dist/apps/cortex-ui web/dist/apps/cortex-ui
-ENV GOPROXY ${GOPROXY:-https://proxy.golang.org}
+#ENV GOPROXY ${GOPROXY:-https://proxy.golang.org}
+# Enables static compiling without libc dynamic linkage but is slower
 ENV CGO_ENABLED=0
 ENV GOOS=linux
 ENV GOARCH=amd64
 
 RUN go mod download -x
 ARG VERSION=unknown
-ARG GOPROXY
+#ARG GOPROXY
 
 #   -w	disable DWARF generation
 #   -s	disable symbol table

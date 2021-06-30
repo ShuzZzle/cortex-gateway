@@ -86,6 +86,11 @@ func (config *Configuration) Authenticate() gin.HandlerFunc {
 	}
 }
 
+func (config *Configuration) Metadata(ctx *gin.Context) {
+	logoutUrl := fmt.Sprintf("%s/.well-known/openid-configuration", config.providerURL)
+	ctx.Redirect(http.StatusFound, logoutUrl)
+}
+
 func (config *Configuration) Login(ctx *gin.Context) {
 	accessToken, err := GetAccessToken(ctx)
 	state := util.RandStringRunes(16)

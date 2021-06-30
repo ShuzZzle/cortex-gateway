@@ -45,7 +45,8 @@ func InitV1Router(config *gateway.Config, database *database.Database) *gin.Engi
 
 	url := ginSwagger.URL("/api/swagger/doc.json")
 	r.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
-	r.GET("/api/login", oauth2Config.Login)
+	r.GET("/api/auth", oauth2Config.Login)
+	r.GET("/api/auth/.well-known/openid-configuration", oauth2Config.Metadata)
 	r.GET("/api/logout", oauth2Config.Logout)
 	r.GET("/api/callback", oauth2Config.Callback)
 
