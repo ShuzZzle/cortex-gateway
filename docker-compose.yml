@@ -2,6 +2,7 @@ version: '3.1'
 services:
   mongo:
     image: mongo:4.0.25
+    container_name: cortex-mongo
     restart: always
     ports:
       - 27017:27017
@@ -11,6 +12,7 @@ services:
     volumes:
       - mongodb_data:/data/db
   cortex-gateway:
+    container_name: cortex-gateway
     build:
       context: .
       dockerfile: Dockerfile

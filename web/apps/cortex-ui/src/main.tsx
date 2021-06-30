@@ -1,5 +1,4 @@
-import { WebStorageStateStore } from "oidc-client";
-import { Authenticate } from "react-oidc-client";
+import { OIDCProvider } from "apps/cortex-ui/src/context/oidc-provider";
 import { BrowserRouter } from "react-router-dom";
 import { ResponsiveSizeProvider } from "./context";
 import React, { StrictMode, Suspense } from "react";
@@ -7,24 +6,17 @@ import * as ReactDOM from "react-dom";
 
 import App from "./app/app";
 
+
+
 ReactDOM.render(
   <StrictMode>
     <ResponsiveSizeProvider>
       <Suspense fallback={null}>
-        <BrowserRouter basename="/ui">
-          <Authenticate basename="/ui" userManagerSettings={{
-            loadUserInfo: true,
-            userStore: new WebStorageStateStore({ store: localStorage }),
-            authority: "/api/auth",
-            client_id: "cortex-gateway",
-            redirect_uri: "/ui/login-complete",
-            popup_redirect_uri: "/ui/login-complete",
-            post_logout_redirect_uri: "/api/logout",
-            response_type: "id_token token"
-          }}>
+        <OIDCProvider client_secret={process.env.CLIENT_SECRET} authority={process.env.OIDC_AUTHORITY} client_id={process.env.CLIENT_ID}>
+          <BrowserRouter basename="/ui">
             <App/>
-          </Authenticate>
-        </BrowserRouter>
+          </BrowserRouter>
+        </OIDCProvider>
       </Suspense>
     </ResponsiveSizeProvider>
   </StrictMode>,

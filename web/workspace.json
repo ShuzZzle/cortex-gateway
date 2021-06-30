@@ -40,6 +40,7 @@
           "executor": "@nrwl/web:build",
           "outputs": ["{options.outputPath}"],
           "options": {
+            "envFile": "../.env",
             "outputPath": "dist/apps/cortex-ui",
             "baseHref": "/ui/",
             "index": "apps/cortex-ui/src/index.html",
@@ -88,7 +89,8 @@
           "executor": "@nrwl/web:dev-server",
           "options": {
             "buildTarget": "cortex-ui:build",
-            "hmr": true
+            "hmr": true,
+            "envFile": "../.env"
           },
           "configurations": {
             "production": {

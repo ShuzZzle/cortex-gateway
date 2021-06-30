@@ -1,6 +1,6 @@
 import { useStore } from "@propero/easy-store-react";
+import { useAuthentication, useUserManager } from "../context/oidc-provider";
 import { SidebarBase } from "./sidebar/sidebar-base";
-import { User } from "../types";
 import { Avatar } from "./avatar/avatar";
 import { MessageBox } from "./dialog/message-box";
 import { Spacer } from "./spacer/spacer";
@@ -9,7 +9,6 @@ import { Page } from "./page/page";
 import { TokenCard, TokenCardProps } from "./token-card/token-card";
 import { breadcrumbs } from "../store/breadcrumbs";
 import React, { useCallback, useState } from "react";
-import { BrowserRouter } from "react-router-dom";
 import { DateTime } from "luxon";
 import faker from "faker";
 
@@ -26,7 +25,6 @@ const tokens = Array(9).fill(0).map((_, n): TokenCardProps & { key: number } => 
 }));
 
 
-
 const sidebar: MenuEntryProps[] = [
   {
     label: "Dashboard",
@@ -39,13 +37,13 @@ const sidebar: MenuEntryProps[] = [
     label: "Tokens",
     icon: "user-id",
     to: "/tokens",
-    match: "/tokens",
+    match: "/tokens"
   },
   {
     label: "Teams",
     icon: "user-group",
     to: "/teams",
-    match: "/teams",
+    match: "/teams"
   },
   {
     label: "Tenants",
@@ -59,38 +57,42 @@ export function App() {
   const [crumbs] = useStore(breadcrumbs);
   // const { user, loginWithPopup } = useAuth0<User>();
   // if (!user) throw loginWithPopup();
-  const user = { name: "Hans", team: { name: "Team" }, avatar: "https://picsum.photos/64/64" };
+
+  const { user, manager } = useAuthentication();
+  const { email, name, nickname, picture = "/assets/placeholder.png" } = user.profile;
+
+  // const user = { name: "Hans", team: { name: "Team" }, avatar: "https://picsum.photos/64/64" };
 
   const [open, setOpen] = useState(false);
 
   const toggle = useCallback(() => {
-    setOpen(it => !it)
+    setOpen(it => !it);
   }, [setOpen]);
 
   const toolbar = <div>
     <Spacer/>
-    <Avatar src={user?.avatar} name={user?.name} description={user?.team.name}/>
+    <Avatar src={picture} name={name} description={email}/>
   </div>;
 
 
   return (
-      <SidebarBase top static content={toolbar}>
-        <Menu items={sidebar} open={open}>
-          <Page toolbar={toolbar} crumbs={crumbs}>
-            <div className="flex flex-row flex-wrap">
-              {tokens.map(token => <TokenCard {...token} />)}
-            </div>
-            <MessageBox
-              open={false}
-              title="Are you sure?"
-              text="This Action will delete all the databases in existence."
-              options={[{ text: "Cancel" }, { text: "Confirm" }]}
-              closeOption={{ text: "Confirm" }}
-              onAction={(action) => console.log("a", action)}
-            />
-          </Page>
-        </Menu>
-      </SidebarBase>
+    <SidebarBase top static content={toolbar}>
+      <Menu items={sidebar} open={open}>
+        <Page toolbar={toolbar} crumbs={crumbs}>
+          <div className="flex flex-row flex-wrap">
+            {tokens.map(token => <TokenCard {...token} />)}
+          </div>
+          <MessageBox
+            open={false}
+            title="Are you sure?"
+            text="This Action will delete all the databases in existence."
+            options={[{ text: "Cancel" }, { text: "Confirm" }]}
+            closeOption={{ text: "Confirm" }}
+            onAction={(action) => console.log("a", action)}
+          />
+        </Page>
+      </Menu>
+    </SidebarBase>
   );
 }
 
