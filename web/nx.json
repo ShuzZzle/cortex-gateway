@@ -25,10 +25,6 @@
     "cortex-ui": {
       "tags": []
     },
-    "cortex-ui-e2e": {
-      "tags": [],
-      "implicitDependencies": ["cortex-ui"]
-    },
     "icons": {
       "tags": []
     }
