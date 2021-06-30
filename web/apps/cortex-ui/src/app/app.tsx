@@ -74,7 +74,6 @@ export function App() {
 
 
   return (
-    <BrowserRouter basename="/ui">
       <SidebarBase top static content={toolbar}>
         <Menu items={sidebar} open={open}>
           <Page toolbar={toolbar} crumbs={crumbs}>
@@ -92,7 +91,6 @@ export function App() {
           </Page>
         </Menu>
       </SidebarBase>
-    </BrowserRouter>
   );
 }
 

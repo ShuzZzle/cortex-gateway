@@ -113,32 +113,6 @@
         }
       }
     },
-    "cortex-ui-e2e": {
-      "root": "apps/cortex-ui-e2e",
-      "sourceRoot": "apps/cortex-ui-e2e/src",
-      "projectType": "application",
-      "targets": {
-        "e2e": {
-          "executor": "@nrwl/cypress:cypress",
-          "options": {
-            "cypressConfig": "apps/cortex-ui-e2e/cypress.json",
-            "tsConfig": "apps/cortex-ui-e2e/tsconfig.e2e.json",
-            "devServerTarget": "cortex-ui:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "cortex-ui:serve:production"
-            }
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["apps/cortex-ui-e2e/**/*.{js,ts}"]
-          }
-        }
-      }
-    },
     "icons": {
       "root": "libs/icons",
       "sourceRoot": "libs/icons/src",
